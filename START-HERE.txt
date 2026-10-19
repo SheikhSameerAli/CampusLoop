@@ -1,0 +1,12 @@
+CampusLoop — JAVA EDITION
+
+1. Install Java 17 or later.
+2. Extract this entire ZIP. Do not run files inside the ZIP directly.
+3. Windows: double-click run.bat.
+   Mac/Linux: open Terminal here and run sh run.sh.
+4. First startup: enter your chosen admin email and password when prompted.
+5. Open http://localhost:8080 in your browser.
+6. Leave the terminal open while using the app.
+
+See README.md for full instructions, features, limitations, and troubleshooting.
+The source code and an already compiled application are both included.
