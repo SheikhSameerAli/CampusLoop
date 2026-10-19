@@ -1,133 +1,206 @@
-# Free deployment edition
+<p align="center">
+  <img src="web/logo.png" alt="CampusLoop — College Event Management" width="280">
+</p>
 
-For free hosting use **Render Free + Neon Free**. Start with `docs/FREE-DEPLOYMENT.md`. This edition supports PostgreSQL in the cloud and retains H2 for local use.
+<h1 align="center">CampusLoop</h1>
+<p align="center"><strong>Your campus. Your events. Stay in the loop.</strong></p>
+<p align="center">A Java-based College Event Management System connecting students and event organizers.</p>
+<p align="center"><a href="https://campusloop-1b6y.onrender.com"><strong>Open CampusLoop — Live Website ↗</strong></a></p>
 
-# CampusLoop — College Event Management System (Java Edition)
+---
 
-A runnable college project with a Java 17 backend, H2 relational database, and responsive HTML/CSS/JavaScript interface. Unlike the earlier static preview, accounts and registrations are stored on the server and survive browser changes and server restarts.
+## About the project
 
-## Start on Windows
+CampusLoop brings event discovery, registration, participant management, and attendance into one website. Students can explore campus activities and reserve a place, while administrators can organize events and manage participation.
 
-1. Install **Java 17 or later** (a JDK is needed if you want to rebuild the source).
-2. Extract the complete ZIP into a folder such as `C:\CampusLoop-Java`. Keep `campusloop.jar`, `run.bat`, and the `lib` folder together.
-3. Double-click **run.bat**. On the first run, enter the administrator email and a password of 10–128 characters. The password input is hidden. There is no default admin password.
-4. Leave the terminal open. Visit **http://localhost:8080** in your browser.
-5. Use **Join campus** to create student accounts, or sign in with your administrator credentials.
-6. Stop the server using Ctrl+C. Start it again with run.bat; your database is retained.
+The project uses a **Java 17 backend**, a responsive **HTML/CSS/JavaScript frontend**, and **SQL storage**. It supports **H2 for local use** and **PostgreSQL for cloud deployment**. No Spring Boot, Maven, or Node.js installation is required to run the bundled local application.
 
-The supplied compiled JAR and H2 driver allow the app to run without Maven or an internet connection. Opening `web/index.html` directly will not work: the Java server provides the API and frontend together.
+The name combines **Campus**, representing college life, with **Loop**, representing a connected community that keeps everyone informed.
 
-## macOS / Linux
+## Features
 
-With Java 17+ installed, open a terminal in the extracted folder:
+| For students | For administrators |
+| --- | --- |
+| Create an account with a unique email and student ID | Sign in with a separate administrator role |
+| Search events and filter by category | Create and edit event details |
+| View descriptions, venues, dates, and available seats | Set seat limits and view actual registrations |
+| Register or cancel before an event starts | View participants and export CSV lists |
+| View personal registrations and cancellation updates | Mark or undo attendance |
+| Download event calendar files | Cancel events while preserving participant records |
+| Print a participation certificate after attendance confirmation | Delete events that have no registrations |
+
+Event categories: **Technical, Cultural, Sports, Workshop, and Community**.
+
+## Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Backend | Java 17, JDK HttpServer |
+| Frontend | HTML5, CSS3, vanilla JavaScript |
+| Database access | JDBC and prepared statements |
+| Local database | H2 |
+| Cloud database | PostgreSQL, compatible with Neon |
+| Deployment | Docker; Render configuration included |
+| API integration tests | Python 3 standard library |
+
+## Run locally
+
+### Requirements
+
+- Java 17 or later; install a JDK if you want to rebuild the source.
+- A modern browser.
+- Git if you are cloning the repository.
+
+Download the repository or clone it using its GitHub URL. Open the project folder containing `run.bat`, `run.sh`, and `campusloop.jar`.
+
+For local H2 operation, leave the external database variables and `REQUIRE_EXTERNAL_DB` unset.
+
+### Windows / VS Code
+
+Open the project folder in VS Code, select **Terminal → New Terminal**, and run:
+
+```powershell
+java -version
+.\run.bat
+```
+
+### macOS / Linux
 
 ```sh
+java -version
 sh run.sh
 ```
 
-To rebuild after changing source or web files:
+On the first startup, enter your chosen administrator email and a password of **10–128 characters** when prompted. There is no default administrator password.
+
+Open **http://localhost:8080**. Keep the terminal running and press **Ctrl+C** to stop the application.
+
+Use **Join campus** to create student accounts. Opening `web/index.html` directly or using VS Code Live Server does not start the Java backend.
+
+### Rebuild after changes
+
+Stop the server before rebuilding.
+
+Windows:
+
+```powershell
+.\build.bat
+.\run.bat
+```
+
+macOS / Linux:
 
 ```sh
 sh build.sh
 sh run.sh
 ```
 
-On Windows, run `build.bat`, then `run.bat`. Stop the running server before rebuilding.
+The build includes the frontend and logo inside `campusloop.jar`.
 
-## Features
+## Deploy with Render and Neon
 
-### Students
-- Account creation with unique email and student ID; sign in and sign out.
-- Browse, search, and filter events by category.
-- Read event descriptions, times, venues, and actual available seat counts.
-- Register and cancel before an event starts.
-- View personal registrations, event cancellation updates, and attendance status.
-- Download a calendar file for an event.
-- Print or save a participation certificate as PDF after an admin confirms attendance.
+The repository includes a Dockerfile and a Render Blueprint configured for a **Free** web service. Use a separate Neon PostgreSQL database for persistent cloud data; do not rely on the web service's temporary filesystem.
 
-### Administrators
-- Server-enforced administrator access.
-- Create and edit events, with future-date and seat-capacity validation.
-- Participant lists containing student IDs, departments, and contact details.
-- Mark or undo attendance after verifying student presence.
-- Export participant CSV files (with spreadsheet formula escaping).
-- Cancel events while preserving participant records.
-- Delete events only when they have no registrations.
-- Dashboard totals calculated from the actual database.
+1. Create a Neon database and obtain its connection details.
+2. Create a Render Web Service from this repository using the **Docker** runtime and **Free** instance, or use `render.yaml` as a Blueprint.
+3. Add the environment variables below in Render.
+4. Set the health check path to **`/api/health`**.
+5. Deploy and open the HTTPS URL provided by Render.
 
-### Data and security
-- H2 SQL database with primary keys, foreign keys, and uniqueness constraints.
-- Prepared SQL statements; no SQL string interpolation of user input.
-- Salted PBKDF2-HMAC-SHA256 password hashes (210,000 iterations).
-- HttpOnly, SameSite=Strict session cookies with eight-hour expiry.
-- CSRF tokens, request origin checks, request size limits, and sign-in rate limits.
-- API authorization independent of whether a button is visible.
-- Registration transactions and a shared write lock: two requests cannot take the last seat.
-- Registration counts start at zero; sample events have no invented participants.
-- Output escaping and a restrictive Content Security Policy.
+| Variable | Value / purpose |
+| --- | --- |
+| `JDBC_DATABASE_URL` | `jdbc:postgresql://YOUR-NEON-HOST/YOUR-DATABASE?sslmode=require` |
+| `DATABASE_USER` | Your Neon database username |
+| `DATABASE_PASSWORD` | Your Neon database password; store as a secret |
+| `ADMIN_EMAIL` | Email for the administrator created on first startup |
+| `ADMIN_PASSWORD` | Unique administrator password of at least 10 characters; store as a secret |
+| `REQUIRE_EXTERNAL_DB` | `true` |
+| `BIND_ADDRESS` | `0.0.0.0` |
+| `COOKIE_SECURE` | `true` for hosted HTTPS |
 
-## Database and backups
+**The JDBC URL must not contain the username, password, or `@`.** Enter credentials only in their separate variables. Never commit passwords, `.env` files, connection strings containing credentials, or database backups.
 
-The database is created in `data/campusloop.mv.db`. Keep this file private. Back it up by stopping the server and copying the `data` folder. Restore with the server stopped. Do not delete the folder unless you intend to reset all accounts, events, and registrations. Do not run two app instances against the same folder.
+The Docker image honors the host's `PORT` and uses the `Asia/Kolkata` timezone. Cloud mode refuses to start without PostgreSQL configuration, preventing accidental use of temporary local storage.
 
-Sample events are scheduled relative to the server's first run. Dates and displayed times use the college server's local timezone. Configure the operating system to the intended college timezone (for example, Asia/Kolkata).
+Choose the providers' Free plans and stay within their current usage limits. Free services may sleep or suspend when limits are reached. This repository does not guarantee unlimited hosting or fixed provider pricing.
 
-Sessions are in memory and are intentionally invalidated when the server restarts. Password hashes and account details remain in the database. There is no password reset screen; retain the administrator credentials securely.
+Online deployment creates a separate database; local accounts and registrations are not automatically migrated. Keep the service at **one instance**, matching the application's write-lock design.
+
+Detailed setup: [Free deployment guide](docs/FREE-DEPLOYMENT.md). Provider documentation: [Render](https://render.com/docs/free) and [Neon](https://neon.com/docs).
+
+## Data and registration rules
+
+- Local records are stored in `data/campusloop.mv.db`; cloud records use the configured PostgreSQL database.
+- Emails, student IDs, and student/event registration pairs have uniqueness constraints.
+- Registration changes close when an event starts.
+- Seat checks and registration inserts run within a transaction under a shared application write lock.
+- Capacity cannot be reduced below the existing registration count.
+- Cancelled events retain participant records and appear as cancelled in students' dashboards.
+- Attendance-confirmed students can print certificates for non-cancelled events.
+- Sessions expire after eight hours and are invalidated by a server restart.
+- Bootstrap admin variables create the first administrator; changing those variables later does not reset an existing password.
+
+For local backups, stop the server before copying the `data` directory. Keep database files private and out of Git.
+
+## Security controls
+
+- Salted PBKDF2-HMAC-SHA256 password hashes.
+- Server-side role checks and prepared SQL statements.
+- HttpOnly, SameSite session cookies; Secure cookies for hosted HTTPS.
+- CSRF tokens and request-origin validation for authenticated changes.
+- Sign-in rate limiting, input validation, and request size limits.
+- Escaped output and a Content Security Policy.
 
 ## Project structure
 
-```text
-CampusLoop-Java/
-  src/campusloop/    Java source: HTTP routing, auth, database, JSON
-  web/              HTML, CSS, JavaScript frontend
-  lib/              H2 driver and license
-  tests/            Automated API integration checks
-  docs/             Architecture, API, and verification notes
-  campusloop.jar    Compiled application with embedded frontend
-  run.bat / run.sh  Start scripts
-  build.bat / build.sh  Rebuild scripts
-  data/             Created at first run; not included in the ZIP
-```
+| Path | Purpose |
+| --- | --- |
+| `src/campusloop/` | Java HTTP server, authentication, database access, and JSON encoding |
+| `web/` | Frontend HTML, CSS, JavaScript, and logo |
+| `lib/` | Bundled database drivers and license notices |
+| `docs/` | Architecture, API, deployment, and verification notes |
+| `tests/integration.py` | Automated API integration checks |
+| `campusloop.jar` | Compiled application with embedded frontend |
+| `run.bat` / `run.sh` | Local startup scripts |
+| `build.bat` / `build.sh` | Rebuild scripts |
+| `Dockerfile` / `render.yaml` | Cloud build and service configuration |
 
-## Automated verification
+## Testing
 
-Requires Python 3, in addition to Java. Run from the project folder:
+With Java and Python 3 installed, run from the project folder **with cloud database environment variables unset**:
 
 ```sh
 python tests/integration.py
 ```
 
-The tests launch an isolated server with a temporary database and check signup, duplicate IDs/emails, login, permissions, CSRF, hostile origins, a race for the last seat, cancellation, attendance, capacity validation, deletion rules, and persistence across restart. Test data is removed afterward. Tests do not alter your real database.
+The suite starts an isolated Java server using temporary local H2 storage. It covers account creation, login, duplicate prevention, permissions, CSRF checks, last-seat concurrency, event cancellation, attendance, capacity validation, deletion restrictions, logo delivery, and persistence after restart.
 
-## Optional configuration
+Local integration checks passed during development. Hosted PostgreSQL connectivity and deployment must be verified in the target environment. Browser appearance, print output, and Windows execution require checks on the target computer.
 
-Environment variables:
+## Branding
 
-| Variable | Default / purpose |
+| Element | Colour |
 | --- | --- |
-| `PORT` | `8080` |
-| `BIND_ADDRESS` | `127.0.0.1` (local computer only) |
-| `DATA_DIR` | `data` relative to project directory |
-| `ADMIN_EMAIL` | First-run bootstrap email; otherwise prompted |
-| `ADMIN_PASSWORD` | First-run bootstrap password; otherwise prompted |
-| `COOKIE_SECURE` | `false`; set to `true` when deployed behind HTTPS |
+| Primary | Navy `#1C3068` |
+| Accent | Coral `#FF5757` |
+| Background | Cool white `#F5F7FC` |
+| Main text | Dark navy `#17213B` |
 
-For a classroom demonstration across your LAN, set BIND_ADDRESS to `0.0.0.0`, allow the chosen port through your firewall, and use the host computer's LAN IP. Accounts and registrations will then be shared by all connected browsers. Use test accounts on plain HTTP. For internet hosting, use a Java-capable host, HTTPS reverse proxy, `COOKIE_SECURE=true`, backups, and additional operational hardening.
+The community-circle logo represents students coming together through campus events.
 
-## Scope and honest limitations
+## Current limitations
 
-This is a complete **college demonstration project**, not a production-audited service. Student IDs/emails are unique but not independently verified; a college roster or email delivery provider is not integrated. There are no email/SMS messages, password recovery, payments, or digitally signed certificates. Cancellation updates appear in the student's dashboard. Printable certificates are attendance acknowledgements, not independently verifiable credentials. Attendance depends on an administrator checking identity. Calendar files use floating local times; confirm the college timezone when importing.
+This is an academic project. Email/student ID ownership is not independently verified. Email/SMS notifications, account recovery, payments, and digitally signed certificates are not included. Certificates are printable participation acknowledgements based on administrator-recorded attendance. Sessions and sign-in rate limits are held in memory, and the application targets one running instance.
 
-Browser appearance and print layout were not visually tested in this environment. Automated API tests passed; Windows scripts were supplied but execution was verified on Linux only.
+## Documentation
 
-The Sites-hosted URL remains an explicitly labelled interactive preview and download page. Sites does not host this Java process. Run this package locally or deploy it to a Java-capable server for the real authenticated application.
+- [Architecture and viva notes](docs/ARCHITECTURE.md)
+- [API reference](docs/API.md)
+- [Free deployment guide](docs/FREE-DEPLOYMENT.md)
+- [Verification notes](docs/VERIFICATION.md)
 
-## Dependency
+Bundled H2 and PostgreSQL drivers retain their respective license notices in `lib/`.
 
-H2 2.3.232 is distributed unchanged in `lib`. Its EPL 1.0 / MPL 2.0 license text is included as `lib/H2-LICENSE.txt`. Original project: https://h2database.com. No framework dependency is needed; the HTTP server is provided by the JDK.
+---
 
-## Final branding
-
-Community-circle CampusLoop logo beside the header wordmark. Navy `#1C3068` and coral `#FF5757` with cool white backgrounds. Footer credit: Designed and developed by Sheikh Sameer Ali. The selected full-resolution logo artwork is included as `web/logo.png`; the header uses CSS framing to show its emblem without duplicating its wordmark.
-
-PostgreSQL driver 42.7.14 is included in lib with its license. Hosted PostgreSQL uses JDBC_DATABASE_URL plus DATABASE_USER and DATABASE_PASSWORD. See docs/FREE-DEPLOYMENT.md.
+<p align="center"><strong>Designed and developed by Sheikh Sameer Ali</strong></p>
